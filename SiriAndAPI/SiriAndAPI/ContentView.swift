@@ -10,6 +10,7 @@ import SwiftUI
 struct ContentView: View {
     let apiManager = APIManager()
     @State private var user: GitHubUser?
+    @State var userNameToSearch = "Piteli02"
     
     var body: some View {
         GeometryReader{ geometry in
@@ -37,9 +38,37 @@ struct ContentView: View {
                     }
                     Spacer()
                 }
-            }.task {
+                
+                Button(action: {
+                    userNameToSearch = "rafachinelatto"
+                }) {
+                    Text("Change name to search")
+                        .font(.headline)
+                        .padding()
+                        .foregroundColor(.white)
+                        .background(Color.blue)
+                        .cornerRadius(10)
+                }
+                
+                
+            }.onChange(of: userNameToSearch){
+                Task{
+                    do {
+                        user = try await apiManager.getUser(userName: userNameToSearch)
+                    }catch GHError.invalidURL{
+                        print("Invalid URL")
+                    }catch GHError.invalidData{
+                        print("Invalid Data")
+                    }catch GHError.invalidResponse{
+                        print("Invalid response")
+                    }catch {
+                        print("Unexpected error")
+                    }
+                }
+            }
+            .task {
                 do {
-                    user = try await apiManager.getUser(userName: "piteli02")
+                    user = try await apiManager.getUser(userName: userNameToSearch)
                 }catch GHError.invalidURL{
                     print("Invalid URL")
                 }catch GHError.invalidData{
